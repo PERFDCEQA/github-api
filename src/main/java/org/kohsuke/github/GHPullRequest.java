@@ -367,7 +367,6 @@ public class GHPullRequest extends GHIssue implements Refreshable {
      *             the io exception
      */
     public String getMergeCommitSha() throws IOException {
-        populate();
         return merge_commit_sha;
     }
 
