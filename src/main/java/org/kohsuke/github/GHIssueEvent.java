@@ -3,6 +3,7 @@ package org.kohsuke.github;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 
@@ -169,8 +170,11 @@ public class GHIssueEvent extends GitHubInteractiveObject {
      *      "https://docs.github.com/en/developers/webhooks-and-events/events/issue-event-types#review_request_removed">review_request_removed</a>
      */
     @SuppressFBWarnings(value = { "EI_EXPOSE_REP" }, justification = "Expected behavior")
-    public GHUser getRequestedReviewer() {
-        return this.requestedReviewer;
+    public GHUser getRequestedReviewer() throws IOException {
+        if (requestedReviewer != null) {
+            return root().getUser(requestedReviewer.getLogin());
+        }
+        return null;
     }
 
     /**
@@ -186,8 +190,11 @@ public class GHIssueEvent extends GitHubInteractiveObject {
      *      "https://docs.github.com/en/developers/webhooks-and-events/events/issue-event-types#review_request_removed">review_request_removed</a>
      */
     @SuppressFBWarnings(value = { "EI_EXPOSE_REP" }, justification = "Expected behavior")
-    public GHUser getReviewRequester() {
-        return this.reviewRequester;
+    public GHUser getReviewRequester() throws IOException {
+        if (reviewRequester != null) {
+            return root().getUser(reviewRequester.getLogin());
+        }
+        return null;
     }
 
     /**

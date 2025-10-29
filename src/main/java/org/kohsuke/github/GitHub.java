@@ -334,6 +334,9 @@ public class GitHub {
 
     private GitHub(GitHubClient client) {
         users = new ConcurrentHashMap<>();
+        LOGGER.log(java.util.logging.Level.FINE,
+                "GitHub API client created for {0}, users cache intitialized",
+                client.getApiUrl());
         orgs = new ConcurrentHashMap<>();
         this.client = client;
     }
@@ -401,6 +404,7 @@ public class GitHub {
         }
 
         users = new ConcurrentHashMap<>();
+        LOGGER.log(java.util.logging.Level.FINE, "GitHub API client created for {0}, users cache initialized", apiUrl);
         orgs = new ConcurrentHashMap<>();
 
         this.client = new GitHubClient(apiUrl,
@@ -908,9 +912,18 @@ public class GitHub {
      */
     public GHUser getUser(String login) throws IOException {
         GHUser u = users.get(login);
+        LOGGER.log(java.util.logging.Level.FINE,
+                "Get user {0}, users in cache are {1}",
+                new Object[]{ login, users.keySet() });
         if (u == null) {
+            LOGGER.log(java.util.logging.Level.FINE,
+                    "User {0} not found in cache, get it and put it to cache",
+                    new Object[]{ login });
             u = createRequest().withUrlPath("/users/" + login).fetch(GHUser.class);
             users.put(u.getLogin(), u);
+            if (!u.getLogin().equals(login)) {
+                users.put(login, u);
+            }
         }
         return u;
     }
@@ -1149,6 +1162,7 @@ public class GitHub {
      * clears all cached data in order for external changes (modifications and del) to be reflected.
      */
     public void refreshCache() {
+        LOGGER.log(java.util.logging.Level.FINE, "Refresh user cache");
         users.clear();
         orgs.clear();
     }
@@ -1268,7 +1282,11 @@ public class GitHub {
      */
     protected GHUser getUser(GHUser orig) {
         GHUser u = users.get(orig.getLogin());
+        LOGGER.log(java.util.logging.Level.FINE,
+                "Get user {0}, users in cache are {1}",
+                new Object[]{ orig.getLogin(), users.keySet() });
         if (u == null) {
+            LOGGER.log(java.util.logging.Level.FINE, "User {0} not found in cache", new Object[]{ orig.getLogin() });
             users.put(orig.getLogin(), orig);
             return orig;
         }
@@ -1325,11 +1343,15 @@ public class GitHub {
      */
     GHUser intern(GHUser user) {
         if (user != null) {
-            // if we already have this user in our map, get it
-            // if not, remember this new user
-            GHUser existingUser = users.putIfAbsent(user.getLogin(), user);
-            if (existingUser != null) {
-                user = existingUser;
+            try {
+                // if we already have this user in our map, get it
+                // if not, remember this new user
+                GHUser existingUser = users.putIfAbsent(user.getLogin(), getUser(user.getLogin()));
+                if (existingUser != null) {
+                    user = existingUser;
+                }
+            } catch (IOException e) {
+                throw new GHException("Failed to get user", e);
             }
         }
         return user;

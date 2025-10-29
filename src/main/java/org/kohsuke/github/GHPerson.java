@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -19,6 +20,8 @@ import java.util.TreeMap;
  * @author Kohsuke Kawaguchi
  */
 public abstract class GHPerson extends GHObject {
+
+    private static final Logger LOGGER = Logger.getLogger(GHPerson.class.getName());
 
     /** The public gists. */
     protected int followers, following, publicRepos, publicGists;
@@ -337,7 +340,11 @@ public abstract class GHPerson extends GHObject {
      *             the io exception
      */
     protected synchronized void populate() throws IOException {
+
         if (super.getCreatedAt() != null) {
+            LOGGER.log(java.util.logging.Level.FINE,
+                    "Already populated {0}, name = {1}",
+                    new Object[]{ this.login, this.name });
             return; // already populated
         }
         if (isOffline()) {
@@ -345,7 +352,12 @@ public abstract class GHPerson extends GHObject {
         }
         URL url = getUrl();
         if (url != null) {
+            LOGGER.log(java.util.logging.Level.FINE,
+                    "Populate using url {0}, name = {1}",
+                    new Object[]{ url, this.name });
             root().createRequest().setRawUrlPath(url.toString()).fetchInto(this);
+        } else {
+            LOGGER.log(java.util.logging.Level.FINE, "Url is null");
         }
     }
 }
