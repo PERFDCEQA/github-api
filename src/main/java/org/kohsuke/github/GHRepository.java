@@ -2601,6 +2601,17 @@ public class GHRepository extends GHObject {
     }
 
     /**
+     * List branches paged iterable.
+     *
+     * @return the paged iterable
+     */
+    public PagedIterable<GHBranch> listBranches() {
+        return root().createRequest()
+                .withUrlPath(getApiTailUrl("branches"))
+                .toIterable(GHBranch[].class, item -> item.wrap(this));
+    }
+
+    /**
      * Gets branch.
      *
      * @param name
