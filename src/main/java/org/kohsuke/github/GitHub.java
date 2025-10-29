@@ -911,6 +911,9 @@ public class GitHub {
         if (u == null) {
             u = createRequest().withUrlPath("/users/" + login).fetch(GHUser.class);
             users.put(u.getLogin(), u);
+            if (!u.getLogin().equals(login)) {
+                users.put(login, u);
+            }
         }
         return u;
     }
@@ -1325,11 +1328,15 @@ public class GitHub {
      */
     GHUser intern(GHUser user) {
         if (user != null) {
-            // if we already have this user in our map, get it
-            // if not, remember this new user
-            GHUser existingUser = users.putIfAbsent(user.getLogin(), user);
-            if (existingUser != null) {
-                user = existingUser;
+            try {
+                // if we already have this user in our map, get it
+                // if not, remember this new user
+                GHUser existingUser = users.putIfAbsent(user.getLogin(), getUser(user.getLogin()));
+                if (existingUser != null) {
+                    user = existingUser;
+                }
+            } catch (IOException e) {
+                throw new GHException("Failed to get user", e);
             }
         }
         return user;
