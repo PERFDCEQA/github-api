@@ -356,11 +356,8 @@ public class GHPullRequest extends GHIssue implements Refreshable {
      * See <a href="https://developer.github.com/changes/2013-04-25-deprecating-merge-commit-sha">GitHub blog post</a>
      *
      * @return the merge commit sha
-     * @throws IOException
-     *             the io exception
      */
-    public String getMergeCommitSha() throws IOException {
-        populate();
+    public String getMergeCommitSha() {
         return mergeCommitSha;
     }
 

@@ -2580,6 +2580,17 @@ public class GHRepository extends GHObject {
     }
 
     /**
+     * List branches paged iterable.
+     *
+     * @return the paged iterable
+     */
+    public PagedIterable<GHBranch> listBranches() {
+        return root().createRequest()
+                .withUrlPath(getApiTailUrl("branches"))
+                .toIterable(GHBranch[].class, item -> item.wrap(this));
+    }
+
+    /**
      * List errors in the {@code CODEOWNERS} file. Note that GitHub skips lines with incorrect syntax; these are
      * reported in the web interface, but not in the API call which this library uses.
      *
